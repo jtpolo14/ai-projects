@@ -1,3 +1,3 @@
 # AI Projects
 
-## 1. AskWise - AI-powered project request platform
+## 1. AskWise - AI-powered project request platform built in AngularJS
