@@ -4,15 +4,25 @@
     <div class="chat-container">
       <h2>Chat</h2>
       <div class="chat-messages">
-        <!-- Chat messages will go here -->
+        <div *ngFor="let message of messages" 
+             [class]="'message ' + (message.isUser ? 'user-message' : 'system-message')">
+          {{ message.text }}
+        </div>
       </div>
       <div class="chat-input">
         <input 
           type="text" 
           placeholder="Describe your project..." 
           class="form-control"
+          [(ngModel)]="userMessage"
+          [disabled]="isAnalyzing"
         >
-        <button class="submit-btn">Send</button>
+        <button 
+          class="submit-btn" 
+          (click)="onSendMessage()" 
+          [disabled]="isAnalyzing">
+          {{ isAnalyzing ? 'Analyzing...' : 'Send' }}
+        </button>
       </div>
     </div>
   </div>
@@ -21,6 +31,9 @@
   <div class="form-column">
     <div class="form-container">
       <h2>Ask Details</h2>
+      <div *ngIf="isAnalyzing" class="analyzing-indicator">
+        Analyzing your project description...
+      </div>
       
       <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
         <div class="button-container">
