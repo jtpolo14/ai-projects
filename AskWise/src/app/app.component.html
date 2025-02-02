@@ -1,0 +1,20 @@
+
+<mat-toolbar class="mat-elevation-z3">
+  <button mat-icon-button (click)="sidenavCollapsed.set(!sidenavCollapsed())" >  
+    <mat-icon>menu</mat-icon>
+  </button>
+  <h2>{{title}} V{{appVersion}}</h2>
+</mat-toolbar>
+<mat-sidenav-container>
+  <mat-sidenav opened  mode="side" [style.width]="sidenavWidth()">
+
+      <app-custom-sidenav [collapsed]="sidenavCollapsed()"/>
+      <div class="sidenav-footer" [style.font-size]="sidenavFooterSize()">Powered by {{appSupportTeam}}</div>
+
+  </mat-sidenav>
+  <mat-sidenav-content class="content" [style.margin-left]="sidenavWidth()">
+    <router-outlet />
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+

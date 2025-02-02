@@ -1,0 +1,94 @@
+<div class="page-container">
+  <!-- Chat Window Column - 1/3 width -->
+  <div class="chat-column">
+    <div class="chat-container">
+      <h2>Chat</h2>
+      <div class="chat-messages">
+        <!-- Chat messages will go here -->
+      </div>
+      <div class="chat-input">
+        <input 
+          type="text" 
+          placeholder="Describe your project..." 
+          class="form-control"
+        >
+        <button class="submit-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Column - 2/3 width -->
+  <div class="form-column">
+    <div class="form-container">
+      <h2>Ask Details</h2>
+      
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <div class="button-container">
+          <button type="submit" [disabled]="userForm.invalid" class="submit-btn">
+            Submit
+          </button>
+        </div>
+
+        <div class="form-content">
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="name">Project Name</label>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                class="form-control"
+                [class.is-invalid]="isFieldInvalid('name')"
+              >
+              <div class="error-message" *ngIf="isFieldInvalid('name')">
+                Project name is required
+              </div>
+            </div>
+
+            <div class="form-group half-width">
+              <label for="owner">Project Owner</label>
+              <input
+                id="owner"
+                type="text"
+                formControlName="owner"
+                class="form-control"
+                [class.is-invalid]="isFieldInvalid('owner')"
+              >
+              <div class="error-message" *ngIf="isFieldInvalid('owner')">
+                Project owner is required
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="overview">Project Overview</label>
+            <textarea
+              id="overview"
+              formControlName="overview"
+              class="form-control"
+              rows="4"
+              [class.is-invalid]="isFieldInvalid('overview')"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('overview')">
+              Project overview is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="problem">Problem Statement</label>
+            <textarea
+              id="problem"
+              formControlName="problem"
+              class="form-control"
+              rows="4"
+              [class.is-invalid]="isFieldInvalid('problem')"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('problem')">
+              Problem statement is required
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
