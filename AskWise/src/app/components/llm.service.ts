@@ -1,25 +1,19 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LlmService {
-  // Mock function to simulate API call
-  analyzeProjectDescription(description: string): Observable<any> {
-    // Mock response data
-    const mockResponse = {
-      projectName: 'E-commerce Platform',
-      timeline: '3 months',
-      budget: '15000',
-      techStack: 'React, Node.js, MongoDB',
-      teamSize: '4',
-      keyFeatures: 'User authentication, Product catalog, Shopping cart, Payment integration',
-      additionalNotes: 'Mobile-responsive design required'
-    };
+  private apiUrl = 'http://localhost:5000/analyze';
 
-    // Simulate API delay
-    return of(mockResponse).pipe(delay(1000));
+  constructor(private http: HttpClient) {}
+
+  analyzeProject(description: string, target: string): Observable<any> {
+    return this.http.post(this.apiUrl, { 
+      user_input: description,
+      target: target 
+    });
   }
 }

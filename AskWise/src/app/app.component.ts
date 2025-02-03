@@ -16,7 +16,7 @@ import { CustomSidenavComponent } from './components/custom-sidenav/custom-siden
 })
 export class AppComponent {
   
-  title = 'ezFramework';
+  title = 'AskWise';
   appVersion = 1.0;
   appSupportTeam = 'jtpolo14'
 

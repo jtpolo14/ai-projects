@@ -13,7 +13,11 @@ interface ChatMessage {
 @Component({
   selector: 'app-ask',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    FormsModule
+  ],
   templateUrl: './ask.component.html',
   styleUrl: './ask.component.scss'
 })
@@ -67,27 +71,41 @@ export class AskComponent implements OnInit {
     });
     
     this.isAnalyzing = true;
-    this.llmService.analyzeProjectDescription(this.userMessage)
+    this.llmService.analyzeProject(this.userMessage, 'prompt001')
       .subscribe({
         next: (response) => {
           // Add system response to chat
+          console.log('LLM Response:', response);
+          console.log('LLM Response PN:', response[0]);
           this.messages.push({
             text: 'I have analyzed your project and populated the form.',
             isUser: false
           });
           
-          // Existing form population code...
+          // Log form values before update
+          console.log('Form before:', this.userForm.value, response.project_name);
+          
+
+          // Update form with response data
           this.userForm.patchValue({
-            name: response.projectName,
-            overview: response.keyFeatures,
-            problem: response.additionalNotes,
+            name: response.project_name || '',
+            owner: response.project_owner || '',
+            overview: response.project_overview || '',
+            problem: response.problem_statement || ''
           });
+          
+          // Log form values after update
+          console.log('Form after:', this.userForm.value);
+          
           this.isAnalyzing = false;
-          // Clear input field
           this.userMessage = '';
         },
         error: (error) => {
           console.error('Error analyzing project:', error);
+          this.messages.push({
+            text: 'Sorry, there was an error analyzing your project.',
+            isUser: false
+          });
           this.isAnalyzing = false;
           this.userMessage = '';
         }
