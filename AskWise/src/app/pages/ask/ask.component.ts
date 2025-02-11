@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LlmService } from '../../components/llm.service';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 interface ChatMessage {
   text: string;
@@ -16,14 +17,16 @@ interface ChatMessage {
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
-    FormsModule
+    FormsModule,
+    HttpClientModule
   ],
   templateUrl: './ask.component.html',
   styleUrl: './ask.component.scss'
 })
 export class AskComponent implements OnInit {
-
-  userForm: FormGroup;
+  currentStep: number = 1;
+  projectForm: FormGroup;
+  impactForm: FormGroup;
   userMessage: string = '';
   isAnalyzing: boolean = false;
   messages: ChatMessage[] = [];
@@ -32,28 +35,59 @@ export class AskComponent implements OnInit {
     private fb: FormBuilder,
     private llmService: LlmService
   ) {
-    this.userForm = this.fb.group({
+    // Initialize Project Details form
+    this.projectForm = this.fb.group({
       name: ['', Validators.required],
       owner: ['', Validators.required],
       overview: ['', Validators.required],
       problem: ['', Validators.required]
     });
+
+    // Initialize Impact Assessment form
+    this.impactForm = this.fb.group({
+      dueDate: ['', Validators.required],
+      financialImpact: ['', Validators.required],
+      customerImpact: ['', Validators.required],
+      operationalImpact: ['', Validators.required]
+    });
   }
 
   ngOnInit(): void {}
 
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.userForm.get(fieldName);
+  isFieldInvalid(fieldName: string, form: FormGroup = this.projectForm): boolean {
+    const field = form.get(fieldName);
     return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 
+  onNextStep(): void {
+    if (this.projectForm.valid) {
+      this.currentStep = 2;
+    } else {
+      Object.keys(this.projectForm.controls).forEach(key => {
+        const control = this.projectForm.get(key);
+        if (control) {
+          control.markAsTouched();
+        }
+      });
+    }
+  }
+
+  onPreviousStep(): void {
+    this.currentStep = 1;
+  }
+
   onSubmit(): void {
-    if (this.userForm.valid) {
-      console.log(this.userForm.value);
+    if (this.impactForm.valid) {
+      // Combine both forms' data
+      const formData = {
+        ...this.projectForm.value,
+        ...this.impactForm.value
+      };
+      console.log('Final form data:', formData);
       // Handle form submission here
     } else {
-      Object.keys(this.userForm.controls).forEach(key => {
-        const control = this.userForm.get(key);
+      Object.keys(this.impactForm.controls).forEach(key => {
+        const control = this.impactForm.get(key);
         if (control) {
           control.markAsTouched();
         }
@@ -76,18 +110,16 @@ export class AskComponent implements OnInit {
         next: (response) => {
           // Add system response to chat
           console.log('LLM Response:', response);
-          console.log('LLM Response PN:', response[0]);
           this.messages.push({
             text: 'I have analyzed your project and populated the form.',
             isUser: false
           });
           
           // Log form values before update
-          console.log('Form before:', this.userForm.value, response.project_name);
+          console.log('Form before:', this.projectForm.value);
           
-
           // Update form with response data
-          this.userForm.patchValue({
+          this.projectForm.patchValue({
             name: response.project_name || '',
             owner: response.project_owner || '',
             overview: response.project_overview || '',
@@ -95,7 +127,7 @@ export class AskComponent implements OnInit {
           });
           
           // Log form values after update
-          console.log('Form after:', this.userForm.value);
+          console.log('Form after:', this.projectForm.value);
           
           this.isAnalyzing = false;
           this.userMessage = '';

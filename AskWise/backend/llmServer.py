@@ -4,6 +4,7 @@ import anthropic  # Add this import
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import json  # Add this import at the top
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -30,6 +31,22 @@ this is a tester project
 I dont know what to do
 
 input: 
+''',
+"prompt002": '''
+PERFORM EACH COMMAND SEPARATELY AND RETURN THE OUTPUT AS A NewLine separated string.
+project_name=Get 1 proj name.EXPLAIN=NO.ex: name
+project_owner=Teams=[Fin, Ops, Tech] Extract 1 team from input, If the input is not clear, default to TBD. team must be in the list.EXPLAIN=NO.ex: Ops
+project_overview=Write a concise project overview that explains what this project aims to achieve. If the input is not clear or more context is needed, default to TBD.
+problem_statement=Write a clear problem statement that this project aims to solve. If the input is not clear or more context is needed, default to TBD.
+follow_up=Write a follow up question that is clear and concise. Parse the above fields (start with project_name) to determine if more information is needed(any field that is TBD) and base the follow up question on that. One follow up question per prompt. If all fields are filled, default to: Please review all data and press submit.
+example_output:
+tester
+ops
+this is a tester project
+I dont know what to do
+Please review all data and press submit
+
+input: 
 '''
 }
 
@@ -43,6 +60,7 @@ def make_llm_call(prompt, model="claude-3-5-sonnet-20241022", temperature=0.7, m
             model=model,
             max_tokens=max_tokens,
             temperature=temperature,
+            system="You are a seasoned technical project manager and data engineer at a Fortune 500 company. You are responsible for asking any follow up questions required to ensure all project requests have clear and concise requirements, impact, and ownership.",
             messages=[
                 {"role": "user", "content": prompt}
             ]
@@ -73,25 +91,32 @@ def make_llm_call(prompt, model="claude-3-5-sonnet-20241022", temperature=0.7, m
 @app.route('/analyze', methods=['POST'])
 def analyze():
     data = request.json
-    print('data', data)
-    target = data.get('target')
+    print('Request data:', json.dumps(data, indent=2))  # Pretty print request
+    
     user_input = data.get('user_input')
+    target = data.get('target')
 
+    print('Target data:', json.dumps(target, indent=2))  # Pretty print request
+    
     responses = {}
-    #for key, prompt in prompts.items():
-    #    #response, _ = make_llm_call(prompts["project_name"].format(user_input))
-    #    response = prompt + user_input
-    #    responses[key] = response
     if target in prompts:
         filled_prompt =  prompts[target] + user_input
         response, _ = make_llm_call(filled_prompt)
-        print('\nresponse', _)
+        print('\nresponse', _)#json.dumps(_, indent=2))
         if target == 'prompt001':
             response = response.split('\n')
             responses["project_name"] = response[0]
             responses["project_owner"] = response[1]
             responses["project_overview"] = response[2]
             responses["problem_statement"] = response[3]
+        
+        elif target == 'prompt002':
+            response = response.split('\n')
+            responses["project_name"] = response[0]
+            responses["project_owner"] = response[1]
+            responses["project_overview"] = response[2]
+            responses["problem_statement"] = response[3]
+            responses["follow_up"] = response[4]
 
         else:
             responses[target] = response
@@ -99,7 +124,7 @@ def analyze():
         responses["error"] = "Invalid target"
 
 
-    print('\nresponses', responses)
+    print('\nResponse data:', json.dumps(responses, indent=2))  # Pretty print response
     return jsonify(responses)
 
 # Debug/CLI mode

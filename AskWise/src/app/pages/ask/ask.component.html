@@ -1,8 +1,8 @@
 <div class="page-container">
-  <!-- Chat Window Column - 1/3 width -->
+  <!-- Chat Window Column - Now First -->
   <div class="chat-column">
-    <div class="chat-container">
-      <h2>Chat</h2>
+    <div class="form-container">
+      <h2>AI Assistant</h2>
       <div class="chat-messages">
         <div *ngFor="let message of messages" 
              [class]="'message ' + (message.isUser ? 'user-message' : 'system-message')">
@@ -12,7 +12,7 @@
       <div class="chat-input">
         <input 
           type="text" 
-          placeholder="Describe your project..." 
+          placeholder="Describe your project..."
           class="form-control"
           [(ngModel)]="userMessage"
           [disabled]="isAnalyzing"
@@ -21,55 +21,65 @@
           class="submit-btn" 
           (click)="onSendMessage()" 
           [disabled]="isAnalyzing">
-          {{ isAnalyzing ? 'Analyzing...' : 'Send' }}
+          Send <i class="fas fa-paper-plane"></i>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Form Column - 2/3 width -->
+  <!-- Form Column - Now Second -->
   <div class="form-column">
     <div class="form-container">
-      <h2>Ask Details</h2>
-      <div *ngIf="isAnalyzing" class="analyzing-indicator">
-        Analyzing your project description...
-      </div>
-      
-      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <div class="header-row">
+        <h2>Project Details</h2>
         <div class="button-container">
-          <button type="submit" [disabled]="userForm.invalid" class="submit-btn">
-            Submit
+          <button type="button" class="back-btn" (click)="onPreviousStep()">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+          <button *ngIf="currentStep === 1" type="submit" class="submit-btn" [disabled]="projectForm.invalid" (click)="onNextStep()">
+            Continue <i class="fas fa-arrow-right"></i>
+          </button>
+          <button *ngIf="currentStep === 2" type="submit" class="submit-btn" [disabled]="projectForm.invalid" (click)="onSubmit()">
+            Submit <i class="fas fa-arrow-right"></i>
           </button>
         </div>
-
+      </div>
+      <div *ngIf="isAnalyzing" class="analyzing-indicator">
+        <i class="fas fa-spinner fa-spin"></i> Analyzing your project...
+      </div>
+      
+      <!-- Step 1: Project Details -->
+      <form *ngIf="currentStep === 1" [formGroup]="projectForm">
         <div class="form-content">
-          <div class="form-row">
-            <div class="form-group half-width">
-              <label for="name">Project Name</label>
-              <input
-                id="name"
-                type="text"
-                formControlName="name"
-                class="form-control"
-                [class.is-invalid]="isFieldInvalid('name')"
-              >
-              <div class="error-message" *ngIf="isFieldInvalid('name')">
-                Project name is required
-              </div>
+          <!-- Project Name alone -->
+          <div class="form-group">
+            <label for="name">Project Name</label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              class="form-control"
+              placeholder="Enter project name"
+              [class.is-invalid]="isFieldInvalid('name')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('name')">
+              <i class="fas fa-exclamation-circle"></i> Required field
             </div>
+          </div>
 
-            <div class="form-group half-width">
-              <label for="owner">Project Owner</label>
-              <input
-                id="owner"
-                type="text"
-                formControlName="owner"
-                class="form-control"
-                [class.is-invalid]="isFieldInvalid('owner')"
-              >
-              <div class="error-message" *ngIf="isFieldInvalid('owner')">
-                Project owner is required
-              </div>
+          <!-- Project Owner on its own line -->
+          <div class="form-group">
+            <label for="owner">Project Owner</label>
+            <input
+              id="owner"
+              type="text"
+              formControlName="owner"
+              class="form-control"
+              placeholder="Select team"
+              [class.is-invalid]="isFieldInvalid('owner')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('owner')">
+              <i class="fas fa-exclamation-circle"></i> Required field
             </div>
           </div>
 
@@ -79,11 +89,12 @@
               id="overview"
               formControlName="overview"
               class="form-control"
-              rows="4"
+              placeholder="Describe your project's main objectives"
+              rows="3"
               [class.is-invalid]="isFieldInvalid('overview')"
             ></textarea>
             <div class="error-message" *ngIf="isFieldInvalid('overview')">
-              Project overview is required
+              <i class="fas fa-exclamation-circle"></i> Required field
             </div>
           </div>
 
@@ -93,11 +104,76 @@
               id="problem"
               formControlName="problem"
               class="form-control"
-              rows="4"
+              placeholder="What problem does this project solve?"
+              rows="3"
               [class.is-invalid]="isFieldInvalid('problem')"
             ></textarea>
             <div class="error-message" *ngIf="isFieldInvalid('problem')">
-              Problem statement is required
+              <i class="fas fa-exclamation-circle"></i> Required field
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Step 2: Impact Assessment -->
+      <form *ngIf="currentStep === 2" [formGroup]="impactForm" (ngSubmit)="onSubmit()">
+        <div class="form-content">
+          <div class="form-group">
+            <label for="dueDate">Target Completion Date</label>
+            <input
+              id="dueDate"
+              type="date"
+              formControlName="dueDate"
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('dueDate', impactForm)"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('dueDate', impactForm)">
+              <i class="fas fa-exclamation-circle"></i> Required field
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="financialImpact">Financial Impact</label>
+            <textarea
+              id="financialImpact"
+              formControlName="financialImpact"
+              class="form-control"
+              placeholder="Describe the financial implications"
+              rows="3"
+              [class.is-invalid]="isFieldInvalid('financialImpact', impactForm)"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('financialImpact', impactForm)">
+              <i class="fas fa-exclamation-circle"></i> Required field
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="customerImpact">Customer Impact</label>
+            <textarea
+              id="customerImpact"
+              formControlName="customerImpact"
+              class="form-control"
+              placeholder="How will this affect our customers?"
+              rows="3"
+              [class.is-invalid]="isFieldInvalid('customerImpact', impactForm)"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('customerImpact', impactForm)">
+              <i class="fas fa-exclamation-circle"></i> Required field
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="operationalImpact">Operational Impact</label>
+            <textarea
+              id="operationalImpact"
+              formControlName="operationalImpact"
+              class="form-control"
+              placeholder="What operational changes are needed?"
+              rows="3"
+              [class.is-invalid]="isFieldInvalid('operationalImpact', impactForm)"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('operationalImpact', impactForm)">
+              <i class="fas fa-exclamation-circle"></i> Required field
             </div>
           </div>
         </div>
