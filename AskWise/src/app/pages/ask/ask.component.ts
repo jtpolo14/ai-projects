@@ -105,15 +105,11 @@ export class AskComponent implements OnInit {
     });
     
     this.isAnalyzing = true;
-    this.llmService.analyzeProject(this.userMessage, 'prompt001')
+    this.llmService.analyzeProject(this.userMessage, 'prompt002')
       .subscribe({
         next: (response) => {
           // Add system response to chat
           console.log('LLM Response:', response);
-          this.messages.push({
-            text: 'I have analyzed your project and populated the form.',
-            isUser: false
-          });
           
           // Log form values before update
           console.log('Form before:', this.projectForm.value);
@@ -129,6 +125,11 @@ export class AskComponent implements OnInit {
           // Log form values after update
           console.log('Form after:', this.projectForm.value);
           
+          this.messages.push({
+            text: response.follow_up || 'hmm...something went wrong',
+            isUser: false
+          });
+
           this.isAnalyzing = false;
           this.userMessage = '';
         },
