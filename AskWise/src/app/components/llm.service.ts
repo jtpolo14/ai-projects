@@ -10,10 +10,11 @@ export class LlmService {
 
   constructor(private http: HttpClient) {}
 
-  analyzeProject(description: string, target: string): Observable<any> {
+  analyzeProject(description: string, target: string, history?: string[]): Observable<any> {
     return this.http.post(this.apiUrl, { 
       user_input: description,
-      target: target 
+      target: target,
+      history: history || []  // Include history if provided, otherwise empty array
     });
   }
 }

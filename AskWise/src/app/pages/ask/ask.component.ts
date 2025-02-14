@@ -98,35 +98,42 @@ export class AskComponent implements OnInit {
   onSendMessage(): void {
     if (!this.userMessage.trim()) return;
     
-    // Add user message to chat
     this.messages.push({
       text: this.userMessage,
       isUser: true
     });
     
     this.isAnalyzing = true;
-    this.llmService.analyzeProject(this.userMessage, 'prompt002')
+    this.llmService.analyzeProject(this.userMessage, 'prompt003', this.messages.map(msg => msg.isUser ? 'user: ' + msg.text : 'you: ' + msg.text))
       .subscribe({
         next: (response) => {
-          // Add system response to chat
           console.log('LLM Response:', response);
+          const jsonResponse = typeof response === 'string' ? JSON.parse(response) : response;
           
-          // Log form values before update
           console.log('Form before:', this.projectForm.value);
+          console.log('Impact form before:', this.impactForm.value);
           
-          // Update form with response data
+          // Update project form fields
           this.projectForm.patchValue({
-            name: response.project_name || '',
-            owner: response.project_owner || '',
-            overview: response.project_overview || '',
-            problem: response.problem_statement || ''
+            name: jsonResponse.project_name || '',
+            owner: jsonResponse.project_owner || '',
+            overview: jsonResponse.project_overview || '',
+            problem: jsonResponse.problem_statement || ''
+          });
+
+          // Update impact form fields 
+          this.impactForm.patchValue({
+            dueDate: jsonResponse.target_date ? new Date(jsonResponse.target_date).toISOString().split('T')[0] : '',
+            financialImpact: jsonResponse.impact_financial || '',
+            customerImpact: jsonResponse.impact_customer || '',
+            operationalImpact: jsonResponse.impact_operational || ''
           });
           
-          // Log form values after update
           console.log('Form after:', this.projectForm.value);
+          console.log('Impact form after:', this.impactForm.value);
           
           this.messages.push({
-            text: response.follow_up || 'hmm...something went wrong',
+            text: jsonResponse.follow_up || 'hmm...something went wrong',
             isUser: false
           });
 
